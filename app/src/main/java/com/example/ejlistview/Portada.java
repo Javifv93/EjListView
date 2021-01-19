@@ -24,7 +24,7 @@ public class Portada extends AppCompatActivity {
         boton_entrar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intnt = new Intent(Portada.this,CrearContacto.class);
+                Intent intnt = new Intent(Portada.this,MainActivity.class);
                 startActivity(intnt);
             }
         });
