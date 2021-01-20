@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class CrearContacto extends AppCompatActivity {
     EditText et_nombre, et_apellidos, et_telefono, et_email, et_direccion, et_comentarios;
@@ -25,7 +26,27 @@ public class CrearContacto extends AppCompatActivity {
         et_direccion = (EditText) findViewById(R.id.Act_crearContactos_et_direccion);
         et_comentarios = (EditText) findViewById(R.id.Act_crearContactos_et_comentarios);
 
-        
+        /*SharedPreferences sp = getSharedPreferences("contactoTemp", Context.MODE_PRIVATE);
+        Toast tostada =  Toast.makeText(CrearContacto.this,
+                sp.getString("nombre","N")+
+                        sp.getString("apellidos","N")+
+                        sp.getInt("telefono",0)+
+                        sp.getString("email","N")+
+                        sp.getString("direccion","N")+
+                        sp.getString("comentarios","N"),
+                Toast.LENGTH_SHORT);
+        tostada.show();*/
+
+       if(getIntent().getBooleanExtra("contactoExistente",false))
+        {
+           SharedPreferences sp = getSharedPreferences("contactoTemp", Context.MODE_PRIVATE);
+            et_nombre.setText(sp.getString("nombre","Np"));
+            et_apellidos.setText(sp.getString("apellidos","Np"));
+            et_telefono.setText(String.valueOf(sp.getInt("telefono",0)));
+            et_email.setText(sp.getString("email","Np"));
+            et_direccion.setText(sp.getString("direccion","Np"));
+            et_comentarios.setText(sp.getString("comentarios","Np"));
+        }
 
         Button boton_registrar = (Button) findViewById(R.id.Act_crearContactos_butt_registrar);
         boton_registrar.setOnClickListener(new View.OnClickListener() {
@@ -45,10 +66,6 @@ public class CrearContacto extends AppCompatActivity {
     private void volver(){
         Intent intnt = new Intent(CrearContacto.this, MainActivity.class);
         startActivity(intnt);
-        finish();
-    }
-    private void contactoActual(){
-
     }
     private void registro() {
 
@@ -65,6 +82,7 @@ public class CrearContacto extends AppCompatActivity {
         SharedPreferences sp = getSharedPreferences("datosContacto", Context.MODE_PRIVATE);
         SharedPreferences.Editor sp_editor = sp.edit();
 
+        sp_editor.putBoolean("semaforo",true);
         sp_editor.putString("nombre", nombre);
         sp_editor.putString("apellidos",apellidos);
         sp_editor.putInt("telefono", telefono);

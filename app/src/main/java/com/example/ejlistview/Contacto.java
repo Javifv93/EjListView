@@ -1,6 +1,7 @@
 package com.example.ejlistview;
 
 public class Contacto {
+    private int id = -1;
     private String nombre;
     private String apellidos;
     private int telefono;
@@ -21,6 +22,8 @@ public class Contacto {
         this.direccion = direccion;
         this.observaciones = observaciones;
     }
+
+    public void setId(int id) { this.id = id; }
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
@@ -45,6 +48,8 @@ public class Contacto {
     public void setObservaciones(String observaciones) {
         this.observaciones = observaciones;
     }
+
+    public int getId() {return  id;}
 
     public String getNombre() {
         return nombre;
