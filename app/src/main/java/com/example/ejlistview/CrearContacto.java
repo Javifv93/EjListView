@@ -12,10 +12,12 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class CrearContacto extends AppCompatActivity {
     EditText et_nombre, et_apellidos, et_telefono, et_email, et_direccion, et_comentarios;
     private ArrayList<Contacto> listaContactos = new ArrayList<Contacto>();
+    int idModificar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +42,7 @@ public class CrearContacto extends AppCompatActivity {
             et_email.setText(sp.getString("email","Np"));
             et_direccion.setText(sp.getString("direccion","Np"));
             et_comentarios.setText(sp.getString("comentarios","Np"));
+            idModificar = sp.getInt("id",-1);
         }
 
         Button boton_registrar = (Button) findViewById(R.id.Act_crearContactos_butt_registrar);
@@ -59,50 +62,57 @@ public class CrearContacto extends AppCompatActivity {
     }
     private void volver(){
         Intent intnt = new Intent(CrearContacto.this, MainActivity.class);
-        persistirDatosContacto_SET();
         startActivity(intnt);
     }
     private void registro() {
-
         String nombre, apellidos, email, direccion, comentarios;
         int telefono;
+        Contacto nuevoContacto = null;
+        boolean todoOk = true;
+        try {
+            nombre = et_nombre.getText().toString();
+            apellidos = et_apellidos.getText().toString();
+            telefono = Integer.valueOf(et_telefono.getText().toString());
+            email = et_email.getText().toString();
+            direccion = et_direccion.getText().toString();
+            comentarios = et_comentarios.getText().toString();
 
-        nombre = et_nombre.getText().toString();
-        apellidos = et_apellidos.getText().toString();
-        telefono = Integer.valueOf(et_telefono.getText().toString());
-        email = et_email.getText().toString();
-        direccion = et_direccion.getText().toString();
-        comentarios = et_comentarios.getText().toString();
-
-        Contacto nuevoContacto = new Contacto(
-                nombre,
-                apellidos,
-                telefono,
-                email,
-                direccion,
-                comentarios
-        );
-
-        SharedPreferences sp = getSharedPreferences("datosContacto", Context.MODE_PRIVATE);
-        SharedPreferences.Editor sp_editor = sp.edit();
-
-        sp_editor.putBoolean("semaforo",true);
-        sp_editor.putString("nombre", nombre);
-        sp_editor.putString("apellidos",apellidos);
-        sp_editor.putInt("telefono", telefono);
-        sp_editor.putString("email",email);
-        sp_editor.putString("direccion",direccion);
-        sp_editor.putString("comentarios",comentarios);
-
-        sp_editor.commit();
-        persistirDatosContacto_SET();
-        volver();
+            nuevoContacto = new Contacto(
+                    nombre,
+                    apellidos,
+                    telefono,
+                    email,
+                    direccion,
+                    comentarios
+            );
+        }catch (Exception e){
+            Toast tostada = Toast.makeText(CrearContacto.this, "Debes introducir todos los campos para guardar el contacto", Toast.LENGTH_SHORT);
+            tostada.show();
+            todoOk = false;
+        }
+        if(todoOk) {
+            if (comprobarDatos(nuevoContacto)) {
+                if (getIntent().getBooleanExtra("contactoExistente", false)) {
+                    Iterator it = listaContactos.listIterator();
+                    while (it.hasNext()) {
+                        Contacto contactoActual = (Contacto) it.next();
+                        if (contactoActual.getId() == idModificar) {
+                            it.remove();
+                        }
+                    }
+                }
+                listaContactos.add(nuevoContacto);
+                persistirDatosContacto_SET();
+                volver();
+            }
+        }
     }
     public void persistirDatosContacto_SET(){
         String registro = "";
         for (Contacto x:listaContactos)
         {
             String id, nombre, apellidos, telefono, email, direccion, comentarios;
+            x.setId(listaContactos.indexOf(x));
             id = String.valueOf(x.getId());
             nombre = x.getNombre();
             apellidos = x.getApellidos();
@@ -112,7 +122,7 @@ public class CrearContacto extends AppCompatActivity {
             comentarios = x.getObservaciones();
 
             registro +=
-                    id+"%"+
+                            id+"%"+
                             nombre+"%"+
                             apellidos+"%"+
                             telefono+"%"+
@@ -158,5 +168,52 @@ public class CrearContacto extends AppCompatActivity {
             System.out.println("Error en persistirDatosContacto_GET fuera del for");
             e.printStackTrace();
         }
+    }
+    boolean comprobarDatos(Contacto nuevoContacto){
+        String nombre, apellidos, telefono, email, direccion, comentarios;
+        nombre = nuevoContacto.getNombre();
+        apellidos = nuevoContacto.getApellidos();
+        telefono = String.valueOf(nuevoContacto.getTelefono());
+        email = nuevoContacto.getEmail();
+        direccion = nuevoContacto.getDireccion();
+        comentarios = nuevoContacto.getObservaciones();
+
+        boolean todoOk = true;
+
+        String[] caracteresProhibidos = {"\\","%","&","$",";","=","+","(",")","?","<",">"};
+        for(String caracter:caracteresProhibidos) {
+            if(nombre.contains(caracter)){
+                todoOk = false;
+                Toast tostada = Toast.makeText(CrearContacto.this, "El nombre introducido contiene carácteres no permitidos", Toast.LENGTH_SHORT);
+                tostada.show();
+            }
+            else if(apellidos.contains(caracter)){
+                todoOk = false;
+                Toast tostada = Toast.makeText(CrearContacto.this, "Los apellidos introducidos contienen carácteres no permitidos", Toast.LENGTH_SHORT);
+                tostada.show();
+            }
+            else if(email.contains(caracter)){
+                todoOk = false;
+                Toast tostada = Toast.makeText(CrearContacto.this, "El email introducido contiene carácteres no permitidos", Toast.LENGTH_SHORT);
+                tostada.show();
+            }
+            else if(direccion.contains(caracter)){
+                todoOk = false;
+                Toast tostada = Toast.makeText(CrearContacto.this, "La dirección introducida contiene carácteres no permitidos", Toast.LENGTH_SHORT);
+                tostada.show();
+            }
+            else if(comentarios.contains(caracter)){
+                todoOk = false;
+                Toast tostada = Toast.makeText(CrearContacto.this, "Los comentarios introducidos contienen carácteres no permitidos", Toast.LENGTH_SHORT);
+                tostada.show();
+            }
+        }
+
+        if((telefono.length()<3)||(telefono.length()>20)){
+            todoOk = false;
+            Toast tostada = Toast.makeText(CrearContacto.this, "El número de teléfono introducido tiene una longitud inapropiada", Toast.LENGTH_SHORT);
+            tostada.show();
+        }
+        return todoOk;
     }
 }

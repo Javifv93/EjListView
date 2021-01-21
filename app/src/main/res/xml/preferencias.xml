@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:key="pc_preferencias" android:title="Preferencias">
+
+        <CheckBoxPreference
+            android:key="cbp_mostrarPrefs"
+            android:title="Información adicional"
+            android:summary="Permite mostrar la información personal complementaria"
+            android:defaultValue="true"
+            />
+    </PreferenceCategory>
+    <PreferenceCategory android:key="pc_infoAd" android:title="Información complementaria">
+        <ListPreference
+            android:key="lp_genero"
+            android:title="Género"
+            android:summary="Introduce tu género"
+            android:dialogTitle="Introduce tu género"
+            />
+        <EditTextPreference
+            android:key="etp_edad"
+            android:title="Edad"
+            android:summary="Introduce tu edad"
+            android:dialogTitle="Introduce tu edad"
+            android:selectAllOnFocus="true"
+            android:inputType="numberDecimal"
+            />
+        <ListPreference
+            android:key="lp_pais"
+            android:title="Pais"
+            android:summary="Introduce tu país de residencia actual"
+            android:dialogTitle="Elige uno"
+            />
+    </PreferenceCategory>
+
+</PreferenceScreen>

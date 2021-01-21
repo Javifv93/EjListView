@@ -10,7 +10,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".CrearContacto"></activity>
-        <activity android:name=".MostrarDatos" />
         <activity android:name=".Portada">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

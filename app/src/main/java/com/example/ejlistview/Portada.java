@@ -1,8 +1,10 @@
 package com.example.ejlistview;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,7 +20,7 @@ public class Portada extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_portada);
 
-        iniciarSP();
+        //limpiarSP();
 
         Button boton_entrar = (Button) findViewById(R.id.Act_portada_button);
         boton_entrar.setOnClickListener(new View.OnClickListener() {
@@ -28,18 +30,37 @@ public class Portada extends AppCompatActivity {
                 startActivity(intnt);
             }
         });
+        Button boton_limpiar = (Button) findViewById(R.id.Act_portada_limpiar);
+        boton_limpiar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                limpiarSP();
+            }
+        });
     }
-    void iniciarSP(){
-        SharedPreferences sp = getSharedPreferences("datosContacto", Context.MODE_PRIVATE);
-        SharedPreferences.Editor sp_editor = sp.edit();
+    void limpiarSP(){
+        AlertDialog.Builder confirmacion = new AlertDialog.Builder(this);
+        confirmacion.setTitle("Confirmación");
+        confirmacion.setMessage("Estas seguro de que quieres borrar los datos?");
 
-        sp_editor.putString("nombre", "");
-        sp_editor.putString("apellidos","");
-        sp_editor.putInt("telefono", 0);
-        sp_editor.putString("email","");
-        sp_editor.putString("direccion","");
-        sp_editor.putString("comentarios","");
+        confirmacion.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        confirmacion.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                SharedPreferences.Editor sp_editor = getSharedPreferences("registroContactos",MODE_PRIVATE).edit();
+                sp_editor.clear().apply();
 
-        sp_editor.commit();
+                Toast tostada = Toast.makeText(Portada.this, "Los datos de contacto de la agenda han sido eliminados", Toast.LENGTH_SHORT);
+                tostada.show();
+            }
+        });
+        confirmacion.show();
+
+
     }
 }

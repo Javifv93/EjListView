@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,21 +24,16 @@ import java.util.Collections;
 public class MainActivity extends AppCompatActivity {
 
     private ListView listView;
-    private ArrayList<Contacto> listaContactos = new ArrayList<Contacto>();//todo Hay que persistir este pedazo de mierda
+    private ArrayList<Contacto> listaContactos = new ArrayList<Contacto>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        limpiarSP();
-        //prueba();//todo BORRAR DESPUES
-
+        
         persistirDatosContacto_GET();
 
         listView = (ListView) findViewById(R.id.eleuve);
-        Toast t = Toast.makeText(MainActivity.this, "Tamaño: "+listaContactos.size(),Toast.LENGTH_SHORT);
-        t.show();
 
         Button boton_contacto = (Button) findViewById(R.id.boton_contacto);
         boton_contacto.setOnClickListener(new View.OnClickListener() {
@@ -48,14 +44,12 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intnt);
             }
         });
-        /*Queda buscar la forma de recuperar el nombre de la lista, y una vez recuperado buscar en el arrayList de listaContactos por nombre de objeto y comparar para obtener el resto de los datos
-        * */
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent intnt = new Intent(MainActivity.this, CrearContacto.class);
-                Object itemSeleccionado = listView.getItemAtPosition(position);
-                String nombreItem = itemSeleccionado.toString();
+               //Object itemSeleccionado = listView.getItemAtPosition(position);
+                String nombreItem = listaContactos.get(position).getNombre();
 
                 for(Contacto x:listaContactos)
                 {
@@ -75,15 +69,6 @@ public class MainActivity extends AppCompatActivity {
                             sp_editor.putString("direccion",x.getDireccion());
                             sp_editor.putString("comentarios",x.getObservaciones());
 
-                            /*Toast tostada =  Toast.makeText(MainActivity.this, x.getNombre() +""
-                                    + x.getId()+""
-                                    +x.getApellidos()+""
-                                    +x.getTelefono()+""
-                                    +x.getEmail()+""
-                                    +x.getDireccion()+""
-                                    +x.getObservaciones(),Toast.LENGTH_SHORT);
-                            tostada.show();*/
-
                             sp_editor.commit();
                             persistirDatosContacto_SET();
                             startActivity(intnt);
@@ -97,56 +82,27 @@ public class MainActivity extends AppCompatActivity {
         boton_configuracion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intnt = new Intent(Settings.ACTION_SETTINGS);
+                startActivityForResult(intnt,0);
             }
         });
     }
     @Override
     protected void onResume() {
         super.onResume();
-        comprobarContactos();
-        if(listaContactos.isEmpty()!=true)  //todo: mirar que esto funcione mejor, no esta filtrando
+        if(listaContactos.isEmpty()!=true)
         {
-            ArrayList<String> listaNombres = new ArrayList<String>();
-            for(int x=0;x<listaContactos.size();x++)
-            {
-                Contacto contacto = listaContactos.get(x);
-                listaNombres.add(contacto.getNombre());
-            }
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,listaNombres);
-
+            AdaptadorLista adapter = new AdaptadorLista(this, listaContactos);
             listView.setAdapter(adapter);
         }
         persistirDatosContacto_SET();
-    }
-
-    private void comprobarContactos() {
-        SharedPreferences sp = getSharedPreferences("datosContacto", Context.MODE_PRIVATE);
-        if (sp.getBoolean("semaforo", true)) {
-            Toast tostada = Toast.makeText(MainActivity.this, "ENTRA", Toast.LENGTH_SHORT);
-            tostada.show();
-            Contacto nuevoContacto = new Contacto(
-                    sp.getString("nombre", null),
-                    sp.getString("apellidos", null),
-                    sp.getInt("telefono", -1),
-                    sp.getString("email", null),
-                    sp.getString("direccion", null),
-                    sp.getString("comentarios", null)
-            );
-            nuevoContacto.setId(listaContactos.size());
-            SharedPreferences.Editor sp_editor = sp.edit();
-            sp_editor.putBoolean("semaforo", false);
-            sp_editor.commit();
-            listaContactos.add(nuevoContacto);
-            Toast t = Toast.makeText(MainActivity.this, "Tamaño: " + listaContactos.size(), Toast.LENGTH_SHORT);
-            t.show();
-        }
     }
     public void persistirDatosContacto_SET(){
         String registro = "";
         for (Contacto x:listaContactos)
         {
             String id, nombre, apellidos, telefono, email, direccion, comentarios;
+            x.setId(listaContactos.indexOf(x));
             id = String.valueOf(x.getId());
             nombre = x.getNombre();
             apellidos = x.getApellidos();
@@ -202,17 +158,5 @@ public class MainActivity extends AppCompatActivity {
             System.out.println("Error en persistirDatosContacto_GET fuera del for");
             e.printStackTrace();
         }
-    }
-    void prueba(){
-        SharedPreferences sp = getSharedPreferences("registroContactos",Context.MODE_PRIVATE);
-        SharedPreferences.Editor sp_editor= sp.edit();
-
-        sp_editor.putString("registro","11%javi%fernandez%234%correo%direccion%comentarios$12%jose%vazquez%123%email%direccion%comentarios$");
-        sp_editor.commit();
-
-    }
-    void limpiarSP(){
-        SharedPreferences.Editor sp_editor = getSharedPreferences("registroContactos",MODE_PRIVATE).edit();
-        sp_editor.clear().apply();
     }
 }
