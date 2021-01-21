@@ -22,6 +22,16 @@ public class Contacto {
         this.direccion = direccion;
         this.observaciones = observaciones;
     }
+    public Contacto (int id, String nombre, String apellidos, int telefono, String email, String direccion, String observaciones)
+    {
+        this.id = id;
+        this.nombre = nombre;
+        this.apellidos = apellidos;
+        this.telefono = telefono;
+        this.email = email;
+        this.direccion = direccion;
+        this.observaciones = observaciones;
+    }
 
     public void setId(int id) { this.id = id; }
 

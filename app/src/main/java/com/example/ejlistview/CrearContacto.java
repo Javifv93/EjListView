@@ -11,13 +11,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class CrearContacto extends AppCompatActivity {
     EditText et_nombre, et_apellidos, et_telefono, et_email, et_direccion, et_comentarios;
+    private ArrayList<Contacto> listaContactos = new ArrayList<Contacto>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crear_contacto);
+
+        persistirDatosContacto_GET();
 
         et_nombre = (EditText) findViewById(R.id.Act_crearContactos_et_nombre);
         et_apellidos = (EditText) findViewById(R.id.Act_crearContactos_et_apellidos);
@@ -25,17 +30,6 @@ public class CrearContacto extends AppCompatActivity {
         et_email = (EditText) findViewById(R.id.Act_crearContactos_et_email);
         et_direccion = (EditText) findViewById(R.id.Act_crearContactos_et_direccion);
         et_comentarios = (EditText) findViewById(R.id.Act_crearContactos_et_comentarios);
-
-        /*SharedPreferences sp = getSharedPreferences("contactoTemp", Context.MODE_PRIVATE);
-        Toast tostada =  Toast.makeText(CrearContacto.this,
-                sp.getString("nombre","N")+
-                        sp.getString("apellidos","N")+
-                        sp.getInt("telefono",0)+
-                        sp.getString("email","N")+
-                        sp.getString("direccion","N")+
-                        sp.getString("comentarios","N"),
-                Toast.LENGTH_SHORT);
-        tostada.show();*/
 
        if(getIntent().getBooleanExtra("contactoExistente",false))
         {
@@ -65,6 +59,7 @@ public class CrearContacto extends AppCompatActivity {
     }
     private void volver(){
         Intent intnt = new Intent(CrearContacto.this, MainActivity.class);
+        persistirDatosContacto_SET();
         startActivity(intnt);
     }
     private void registro() {
@@ -79,6 +74,15 @@ public class CrearContacto extends AppCompatActivity {
         direccion = et_direccion.getText().toString();
         comentarios = et_comentarios.getText().toString();
 
+        Contacto nuevoContacto = new Contacto(
+                nombre,
+                apellidos,
+                telefono,
+                email,
+                direccion,
+                comentarios
+        )
+
         SharedPreferences sp = getSharedPreferences("datosContacto", Context.MODE_PRIVATE);
         SharedPreferences.Editor sp_editor = sp.edit();
 
@@ -91,7 +95,68 @@ public class CrearContacto extends AppCompatActivity {
         sp_editor.putString("comentarios",comentarios);
 
         sp_editor.commit();
-
+        persistirDatosContacto_SET();
         volver();
+    }
+    public void persistirDatosContacto_SET(){
+        String registro = "";
+        for (Contacto x:listaContactos)
+        {
+            String id, nombre, apellidos, telefono, email, direccion, comentarios;
+            id = String.valueOf(x.getId());
+            nombre = x.getNombre();
+            apellidos = x.getApellidos();
+            telefono = String.valueOf(x.getTelefono());
+            email = x.getEmail();
+            direccion = x.getDireccion();
+            comentarios = x.getObservaciones();
+
+            registro +=
+                    id+"%"+
+                            nombre+"%"+
+                            apellidos+"%"+
+                            telefono+"%"+
+                            email+"%"+
+                            direccion+"%"+
+                            comentarios+"$"
+            ;
+        }
+        SharedPreferences sp = getSharedPreferences("registroContactos", Context.MODE_PRIVATE);
+        SharedPreferences.Editor sp_editor = sp.edit();
+        sp_editor.putString("registro", registro);
+        sp_editor.commit();
+    }
+    public void persistirDatosContacto_GET()
+    {
+        SharedPreferences sp = getSharedPreferences("registroContactos", Context.MODE_PRIVATE);
+        try {
+            String registro = sp.getString("registro","");
+            String[] arrayContactos = registro.split("\\$");
+            for(int x=0;x<arrayContactos.length;x++)
+            {
+                try{
+                    String [] arrayDatos = arrayContactos[x].split("%");
+                    Contacto nuevoContacto = new Contacto(
+                            Integer.parseInt(arrayDatos[0]),    //id
+                            arrayDatos[1],                      //nombre
+                            arrayDatos[2],                      //apellidos
+                            Integer.parseInt(arrayDatos[3]),    //telefono
+                            arrayDatos[4],                      //email
+                            arrayDatos[5],                      //direccion
+                            arrayDatos[6]                       //comentarios
+                    );
+                    listaContactos.add(nuevoContacto);
+                }catch (Exception e){
+                    System.out.println("Error en persistirDatosContacto_GET dentro del for en vuelta "+x);
+                    e.printStackTrace();
+                }
+            }
+        }catch (Exception e)
+        {
+            Toast tostada = Toast.makeText(CrearContacto.this,"Error al acceder a los contactos guardados",Toast.LENGTH_SHORT);
+            tostada.show();
+            System.out.println("Error en persistirDatosContacto_GET fuera del for");
+            e.printStackTrace();
+        }
     }
 }

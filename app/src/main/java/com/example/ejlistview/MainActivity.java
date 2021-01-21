@@ -30,6 +30,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        limpiarSP();
+        //prueba();//todo BORRAR DESPUES
+
+        persistirDatosContacto_GET();
+
         listView = (ListView) findViewById(R.id.eleuve);
         Toast t = Toast.makeText(MainActivity.this, "Tamaño: "+listaContactos.size(),Toast.LENGTH_SHORT);
         t.show();
@@ -39,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intnt = new Intent(MainActivity.this, CrearContacto.class);
+                persistirDatosContacto_SET();
                 startActivity(intnt);
             }
         });
@@ -79,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
                             tostada.show();*/
 
                             sp_editor.commit();
+                            persistirDatosContacto_SET();
                             startActivity(intnt);
                         }
                     }
@@ -136,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     public void persistirDatosContacto_SET(){
-        String registro = "$";
+        String registro = "";
         for (Contacto x:listaContactos)
         {
             String id, nombre, apellidos, telefono, email, direccion, comentarios;
@@ -166,13 +173,46 @@ public class MainActivity extends AppCompatActivity {
     public void persistirDatosContacto_GET()
     {
         SharedPreferences sp = getSharedPreferences("registroContactos", Context.MODE_PRIVATE);
-        String registro = sp.getString("registro","");
-
-        String[] arrayContactos = registro.split("$");
-        for(int x=0;x<arrayContactos.length;x++)
+        try {
+            String registro = sp.getString("registro","");
+            String[] arrayContactos = registro.split("\\$");
+            for(int x=0;x<arrayContactos.length;x++)
+            {
+                try{
+                    String [] arrayDatos = arrayContactos[x].split("%");
+                    Contacto nuevoContacto = new Contacto(
+                            Integer.parseInt(arrayDatos[0]),    //id
+                            arrayDatos[1],                      //nombre
+                            arrayDatos[2],                      //apellidos
+                            Integer.parseInt(arrayDatos[3]),    //telefono
+                            arrayDatos[4],                      //email
+                            arrayDatos[5],                      //direccion
+                            arrayDatos[6]                       //comentarios
+                    );
+                    listaContactos.add(nuevoContacto);
+                }catch (Exception e){
+                    System.out.println("Error en persistirDatosContacto_GET dentro del for en vuelta "+x);
+                    e.printStackTrace();
+                }
+            }
+        }catch (Exception e)
         {
-            String [] arrayDatos = arrayContactos[x].split("%");
-            //todo SEGUIR AQUI!
+            Toast tostada = Toast.makeText(MainActivity.this,"Error al acceder a los contactos guardados",Toast.LENGTH_SHORT);
+            tostada.show();
+            System.out.println("Error en persistirDatosContacto_GET fuera del for");
+            e.printStackTrace();
         }
+    }
+    void prueba(){
+        SharedPreferences sp = getSharedPreferences("registroContactos",Context.MODE_PRIVATE);
+        SharedPreferences.Editor sp_editor= sp.edit();
+
+        sp_editor.putString("registro","11%javi%fernandez%234%correo%direccion%comentarios$12%jose%vazquez%123%email%direccion%comentarios$");
+        sp_editor.commit();
+
+    }
+    void limpiarSP(){
+        SharedPreferences.Editor sp_editor = getSharedPreferences("registroContactos",MODE_PRIVATE).edit();
+        sp_editor.clear().apply();
     }
 }
